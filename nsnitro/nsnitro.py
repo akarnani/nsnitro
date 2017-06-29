@@ -2,6 +2,7 @@
 
 import urllib
 import urllib2
+import ssl
 from nsutil import *
 from nsexceptions import *
 
@@ -17,6 +18,7 @@ class NSNitro:
     __password = "api_user"
     __baseurl = "http://1.2.3.4/nitro/v1/"
     __sessionid = ""
+    __context = ssl.create_default_context()
     __loggedin = False
     __initialized = False
     __contenttype = "application/x-www-form-urlencoded"
@@ -24,13 +26,18 @@ class NSNitro:
         'Cookie': 'sessionid=' + __sessionid,
         'Content-type': __contenttype}
 
-    def __init__(self, ip, user, password, useSSL=False):
+    def __init__(self, ip, user, password, useSSL=False, sslVerify=True):
         """ Constructor: ip - LB ip, user - LB username, pass - LB password """
         self.__ip = ip
         self.__user = user
         self.__password = password
         self.__baseurl = "%s://%s/nitro/v1/" % (
             'https' if useSSL else 'http', ip)
+
+        if not sslVerify:
+            self.__context.check_hostname = False
+            self.__context.verify_mode = ssl.CERT_NONE
+
         self.__initialized = True
 
     def get_url(self, resource='config'):
@@ -72,7 +79,7 @@ class NSNitro:
             payload_encoded = urllib.urlencode(payload)
             req = urllib2.Request(
                 self.get_url(), payload_encoded, self.__postheaders)
-            response = urllib2.urlopen(req)
+            response = urllib2.urlopen(req, context=self.__context)
         except urllib2.HTTPError, e:
             try:
                 NSNitroResponse(e.read())
@@ -87,7 +94,7 @@ class NSNitro:
             request = urllib2.Request(self.get_url(), json.dumps(payload))
             request.add_header('Cookie', 'sessionid=' + self.__sessionid)
             request.get_method = lambda: 'PUT'
-            response = opener.open(request)
+            response = opener.open(request, context=self.__context)
         except urllib2.HTTPError, e:
             try:
                 NSNitroResponse(e.read())
@@ -101,7 +108,7 @@ class NSNitro:
             opener = urllib2.build_opener()
             opener.addheaders.append(
                 ('Cookie', 'sessionid=' + self.__sessionid))
-            response = opener.open(url)
+            response = opener.open(url, context=self.__context)
         except urllib2.HTTPError, e:
             try:
                 NSNitroResponse(e.read())
@@ -115,7 +122,7 @@ class NSNitro:
             req = urllib2.Request(url)
             req.add_header('Cookie', 'sessionid=' + self.__sessionid)
             req.get_method = lambda: 'DELETE'
-            response = urllib2.urlopen(req)
+            response = urllib2.urlopen(req, context=self.__context)
         except urllib2.HTTPError, e:
             try:
                 NSNitroResponse(e.read())
