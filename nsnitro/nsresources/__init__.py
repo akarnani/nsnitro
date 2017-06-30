@@ -84,6 +84,7 @@ from nslbvserverstat import NSLBVServerStat
 from nsservicegroupstat import NSServiceGroupStat
 from nsservicegroupmemberstat import NSServiceGroupMemberStat
 from nscsvserverstat import NSCSVServerStat
+from reboot import Reboot
 
 
 __all__ = ['NSBaseResource',
@@ -172,4 +173,5 @@ __all__ = ['NSBaseResource',
            'NSServiceGroupStat',
            'NSServiceGroupMemberStat',
            'NSCSVServerStat',
+           'Reboot',
            ]
